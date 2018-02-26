@@ -6,4 +6,5 @@
 	url = https://github.com/dmlc/dmlc-core
 [submodule "tvm"]
 	path = tvm
-	url = https://github.com/dmlc/tvm
+	branch = experimental
+	url = git@github.com:liangfu/tvm.git
