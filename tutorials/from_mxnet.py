@@ -19,6 +19,7 @@ import mxnet as mx
 import nnvm
 import tvm
 import numpy as np
+import time
 
 ######################################################################
 # Download Resnet18 model from Gluon Model Zoo
@@ -28,7 +29,9 @@ from mxnet.gluon.model_zoo.vision import get_model
 from mxnet.gluon.utils import download
 from PIL import Image
 from matplotlib import pyplot as plt
-block = get_model('resnet18_v1', pretrained=True)
+
+model_name = 'mobilenet0.25'
+block = get_model(model_name, pretrained=True)
 img_name = 'cat.jpg'
 synset_url = ''.join(['https://gist.githubusercontent.com/zhreshold/',
                       '4d0b62f3d01426887599d4f7ede23ee5/raw/',
@@ -40,8 +43,8 @@ download(synset_url, synset_name)
 with open(synset_name) as f:
     synset = eval(f.read())
 image = Image.open(img_name).resize((224, 224))
-plt.imshow(image)
-plt.show()
+# plt.imshow(image)
+# plt.show()
 
 def transform_image(image):
     image = np.array(image) - np.array([123., 117., 104.])
@@ -66,7 +69,7 @@ sym = nnvm.sym.softmax(sym)
 ######################################################################
 # now compile the graph
 import nnvm.compiler
-target = 'cuda'
+target = 'opencl'
 shape_dict = {'data': x.shape}
 graph, lib, params = nnvm.compiler.build(sym, target, shape_dict, params=params)
 
@@ -75,18 +78,23 @@ graph, lib, params = nnvm.compiler.build(sym, target, shape_dict, params=params)
 # ---------------------------------
 # Now, we would like to reproduce the same forward computation using TVM.
 from tvm.contrib import graph_runtime
-ctx = tvm.gpu(0)
+ctx = tvm.cl(0)
 dtype = 'float32'
 m = graph_runtime.create(graph, lib, ctx)
-# set inputs
-m.set_input('data', tvm.nd.array(x.astype(dtype)))
 m.set_input(**params)
-# execute
-m.run()
-# get outputs
-tvm_output = m.get_output(0, tvm.nd.empty((1000,), dtype))
-top1 = np.argmax(tvm_output.asnumpy())
-print('TVM prediction top-1:', top1, synset[top1])
+for i in range(2):
+    # set inputs
+    m.set_input('data', tvm.nd.array(x.astype(dtype)))
+    tic = time.time()
+    # execute
+    m.run()
+    # get outputs
+    tvm_output = m.get_output(0, tvm.nd.empty((1000,), dtype))
+    top1 = np.argsort(tvm_output.asnumpy())[::-1][:5]
+    toc = time.time()
+    print('elapsed: %.1fms' % ((toc-tic)*1000.,))
+    for i in range(5):
+        print('TVM prediction top-%d:'%(i+1,), top1[i], synset[top1[i]])
 
 ######################################################################
 # Use MXNet symbol with pretrained weights
@@ -103,12 +111,12 @@ def block2symbol(block):
     return sym, args, auxs
 mx_sym, args, auxs = block2symbol(block)
 # usually we would save/load it as checkpoint
-mx.model.save_checkpoint('resnet18_v1', 0, mx_sym, args, auxs)
+mx.model.save_checkpoint(model_name, 0, mx_sym, args, auxs)
 # there are 'resnet18_v1-0000.params' and 'resnet18_v1-symbol.json' on disk
 
 ######################################################################
 # for a normal mxnet model, we start from here
-mx_sym, args, auxs = mx.model.load_checkpoint('resnet18_v1', 0)
+mx_sym, args, auxs = mx.model.load_checkpoint(model_name, 0)
 # now we use the same API to get NNVM compatible symbol
 nnvm_sym, nnvm_params = nnvm.frontend.from_mxnet(mx_sym, args, auxs)
 # repeat the same steps to run this model using TVM

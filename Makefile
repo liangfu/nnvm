@@ -10,7 +10,7 @@ endif
 include $(config)
 
 export LDFLAGS = -pthread -lm
-export CFLAGS = -std=c++11 -Wall -O2 -Iinclude -fPIC
+export CFLAGS = -std=c++11 -Wall -O0 -Iinclude -fPIC -g
 CFLAGS += -Itvm/include -Itvm/dlpack/include -Itvm/HalideIR/src
 
 ifdef DMLC_CORE_PATH

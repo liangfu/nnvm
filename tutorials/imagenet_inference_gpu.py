@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Compile GPU Inference
 =====================
@@ -7,6 +9,7 @@ This is an example of using NNVM to compile MobileNet/ResNet model and deploy it
 
 To begin with, we import nnvm(for compilation) and TVM(for deployment).
 """
+
 import tvm
 import numpy as np
 from tvm.contrib import nvcc, graph_runtime
@@ -20,10 +23,10 @@ import nnvm.testing
 # To get the maximum performance, we need to enable nvcc's compiler hook.
 # This usually gives better performance than nvrtc mode.
 
-@tvm.register_func
-def tvm_callback_cuda_compile(code):
-    ptx = nvcc.compile_cuda(code, target="ptx")
-    return ptx
+# @tvm.register_func
+# def tvm_callback_cuda_compile(code):
+#     ptx = nvcc.compile_cuda(code, target="ptx")
+#     return ptx
 
 ######################################################################
 # Prepare the Benchmark
@@ -41,8 +44,8 @@ def tvm_callback_cuda_compile(code):
 #
 #   In a typical workflow, we can get this pair from :any:`nnvm.frontend`
 #
-target = "cuda"
-ctx = tvm.gpu(0)
+target = "opencl"
+ctx = tvm.cl(0)
 batch_size = 1
 num_classes = 1000
 image_shape = (3, 224, 224)
@@ -86,4 +89,4 @@ module.run()
 # get output
 out = module.get_output(0, tvm.nd.empty(out_shape))
 # convert to numpy
-out.asnumpy()
+print(out.asnumpy()[0].argsort()[::-1][:5])
