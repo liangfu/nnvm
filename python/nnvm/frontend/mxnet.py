@@ -209,7 +209,7 @@ _level_3_ops = ["reshape", "copy", "negative", "leaky_relu",
                 "__mul_scalar__", "__div_scalar__", "__rdiv_scalar__",
                 "__pow_scalar__", "__rpow_scalar__",
                 "__add_symbol__", "__sub_symbol__",
-                "__mul_symbol__", "__div_symbol__","__pow_symbol__"]
+                "__mul_symbol__", "__div_symbol__", "__pow_symbol__"]
 
 _level_4_ops = ["transpose", "broadcast_to", "sum", "min", "max",
                 "broadcast_add", "broadcast_sub", "broadcast_mul",
