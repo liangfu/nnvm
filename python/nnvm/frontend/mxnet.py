@@ -213,7 +213,7 @@ _level_3_ops = ["reshape", "copy", "negative", "leaky_relu",
 
 _level_4_ops = ["transpose", "broadcast_to", "sum", "min", "max",
                 "broadcast_add", "broadcast_sub", "broadcast_mul",
-                "broadcast_div", "clip", "greater", "less", "cast", 
+                "broadcast_div", "clip", "greater", "less", "cast",
                 "expand_like", "reshape_like", "full", "full_like",
                 "ones", "ones_like", "zeros", "zeros_like"]
 
