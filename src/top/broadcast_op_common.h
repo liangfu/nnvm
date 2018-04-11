@@ -12,6 +12,9 @@
 #include <nnvm/top/tensor.h>
 #include "./op_common.h"
 #include "./elemwise_op_common.h"
+#include <algorithm>
+#include <utility>
+#include <vector>
 
 namespace nnvm {
 namespace top {
