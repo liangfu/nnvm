@@ -51,7 +51,7 @@ reg.register_schedule("dequantize", _fschedule_naive)
 def compute_quantized_dense(attrs, inputs, _):
     """Compute definition of quantized_dense"""
     out_dtype = attrs['out_type']
-    assert attrs.get_bool("use_bias") == False
+    assert attrs.get_bool("use_bias") is False
 
     data = inputs[0]
     weight = inputs[1]
@@ -80,7 +80,7 @@ def compute_quantized_conv2d(attrs, inputs, _):
 
     assert layout == "NCHW", "only support nchw for now"
     assert dilation == (1, 1), "not support dilate now"
-    assert attrs.get_bool("use_bias") == False
+    assert attrs.get_bool("use_bias") is False
     if groups == 1:
         out = topi.nn.conv2d(inputs[0],
                              inputs[1],
