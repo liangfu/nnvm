@@ -10,11 +10,11 @@
 #include <nnvm/node.h>
 #include <nnvm/op_attr_types.h>
 #include <nnvm/top/tensor.h>
-#include "./op_common.h"
-#include "./elemwise_op_common.h"
 #include <algorithm>
 #include <utility>
 #include <vector>
+#include "./op_common.h"
+#include "./elemwise_op_common.h"
 
 namespace nnvm {
 namespace top {
