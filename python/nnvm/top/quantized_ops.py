@@ -6,8 +6,6 @@ import tvm
 import topi
 from topi.util import get_const_int
 from . import registry as reg
-from .registry import OpPattern
-import numpy as np
 
 
 def _fschedule_naive(_, outs, target):
@@ -25,10 +23,12 @@ def compute_quantize(attrs, inputs, _):
     repr_value = pow(2, repr_bit)
     limit = (pow(2, bit_width - 1) - 1) * repr_value
     cliped_data = topi.clip(data, -limit, limit)
-    scaled_data = tvm.compute(data.shape, lambda *i: cliped_data(*i) / repr_value)
-    round_data = tvm.compute(data.shape, lambda *i: tvm.select(scaled_data(*i) < 0,
-        - (- scaled_data(*i) + 0.5), scaled_data(*i) + 0.5))
-    # round_data = stochastic_round(scaled_data, 0)
+    scaled_data = tvm.compute(data.shape, lambda *i: \
+        cliped_data(*i) / repr_value)
+    round_data = tvm.compute(data.shape, lambda *i: \
+        tvm.select(scaled_data(*i) < 0,
+                   - (- scaled_data(*i) + 0.5),
+                   scaled_data(*i) + 0.5))
     return topi.cast(round_data, out_dtype)
 
 
@@ -51,14 +51,15 @@ def compute_quantized_dense(attrs, inputs, _):
     cmp_dtype = 'int32' # compute data type
     assert attrs.get_bool("use_bias") == False
 
-    data   = inputs[0]
+    data = inputs[0]
     weight = inputs[1]
     m, l = data.shape
     n, _ = weight.shape
 
     k = tvm.reduce_axis((0, l), name='k')
-    out = tvm.compute((m, n),
-        lambda i, j: tvm.sum(data[i][k].astype(cmp_dtype) * weight[j][k].astype(cmp_dtype), axis=k))
+    out = tvm.compute((m, n), lambda i, j: \
+        tvm.sum(data[i][k].astype(cmp_dtype) *
+                weight[j][k].astype(cmp_dtype), axis=k))
     return out
 
 reg.register_schedule("quantized_dense", _fschedule_naive)
