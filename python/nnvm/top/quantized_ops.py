@@ -14,6 +14,7 @@ def _fschedule_naive(_, outs, target):
 
 @reg.register_compute("quantize")
 def compute_quantize(attrs, inputs, _):
+    """Compute definition of quantize"""
     repr_bit = attrs.get_int('repr_bit')
     out_dtype = attrs['out_type']
     assert out_dtype == 'int8'
@@ -37,6 +38,7 @@ reg.register_schedule("quantize", _fschedule_naive)
 
 @reg.register_compute("dequantize")
 def compute_dequantize(attrs, inputs, _):
+    """Compute definition of dequantize"""
     repr_bit = attrs.get_int('repr_bit')
     data = inputs[0]
     scaled_data = tvm.compute(data.shape, lambda *i: (data(*i)) * float(pow(2, repr_bit)))
@@ -47,8 +49,8 @@ reg.register_schedule("dequantize", _fschedule_naive)
 
 @reg.register_compute("quantized_dense")
 def compute_quantized_dense(attrs, inputs, _):
+    """Compute definition of quantized_dense"""
     out_dtype = attrs['out_type']
-    cmp_dtype = 'int32' # compute data type
     assert attrs.get_bool("use_bias") == False
 
     data = inputs[0]
@@ -58,8 +60,8 @@ def compute_quantized_dense(attrs, inputs, _):
 
     k = tvm.reduce_axis((0, l), name='k')
     out = tvm.compute((m, n), lambda i, j: \
-        tvm.sum(data[i][k].astype(cmp_dtype) *
-                weight[j][k].astype(cmp_dtype), axis=k))
+        tvm.sum(data[i][k].astype(out_dtype) *
+                weight[j][k].astype(out_dtype), axis=k))
     return out
 
 reg.register_schedule("quantized_dense", _fschedule_naive)
@@ -67,6 +69,7 @@ reg.register_schedule("quantized_dense", _fschedule_naive)
 
 @reg.register_compute("quantized_conv2d")
 def compute_quantized_conv2d(attrs, inputs, _):
+    """Compute definition of quantized_conv2d"""
     padding = attrs.get_int_tuple("padding")
     strides = attrs.get_int_tuple("strides")
     dilation = attrs.get_int_tuple("dilation")
@@ -74,19 +77,24 @@ def compute_quantized_conv2d(attrs, inputs, _):
     channels = attrs.get_int("channels")
     layout = attrs["layout"]
     out_dtype = attrs['out_type']
-    cmp_dtype = 'int32' # compute data type
 
     assert layout == "NCHW", "only support nchw for now"
     assert dilation == (1, 1), "not support dilate now"
     assert attrs.get_bool("use_bias") == False
     if groups == 1:
-        out = topi.nn.conv2d(inputs[0], inputs[1], strides, padding, out_dtype=cmp_dtype)
+        out = topi.nn.conv2d(inputs[0],
+                             inputs[1],
+                             strides,
+                             padding,
+                             out_dtype=out_dtype)
     elif groups == get_const_int(inputs[0].shape[1]) and groups == channels:
-        out = topi.nn.depthwise_conv2d_nchw(inputs[0], inputs[1], strides, padding, out_dtype=cmp_dtype)
+        out = topi.nn.depthwise_conv2d_nchw(inputs[0],
+                                            inputs[1],
+                                            strides,
+                                            padding,
+                                            out_dtype=out_dtype)
     else:
         raise ValueError("not support arbitrary group number for now")
-
-    assert out_dtype == cmp_dtype
     return out
 
 @reg.register_schedule("quantized_conv2d")
