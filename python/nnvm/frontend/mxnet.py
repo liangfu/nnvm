@@ -226,6 +226,8 @@ _convert_map = {
     '_plus_scalar'  : _rename('__add_scalar__'),
     '_rdiv_scalar'  : _rename('__rdiv_scalar__'),
     '_rminus_scalar': _rename('__rsub_scalar__'),
+    'broadcast_greater' : _rename('greater'),
+    'broadcast_lesser'  : _rename('less'),
     'Activation'    : _activations,
     'BatchNorm'     : _batch_norm,
     'BatchNorm_v1'  : _batch_norm,
