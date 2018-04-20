@@ -197,14 +197,14 @@ def _upsampling(inputs, attrs):
 
 _level_1_ops = ["dense", "relu", "tanh", "sigmoid", "exp", "log", "sqrt",
                 "elemwise_add", "elemwise_sub", "elemwise_mul",
-                "elemwise_div", "elemwise_sum", "flatten", "concatenate",
-                "expand_dims", "squeeze", "split", "dropout", "batch_norm",
+                "elemwise_div", "elemwise_sum", "flatten",
+                "expand_dims", "squeeze", "split", "dropout",
                 "softmax", "log_softmax", "pad", "block_grad"]
 
-_level_2_ops = ["conv2d", "conv2d_transpose", "max_pool2d", "avg_pool2d",
+_level_2_ops = ["max_pool2d", "avg_pool2d",
                 "global_max_pool2d", "global_avg_pool2d"]
 
-_level_3_ops = ["reshape", "copy", "negative", "leaky_relu",
+_level_3_ops = ["copy", "negative",
                 "__add_scalar__", "__sub_scalar__", "__rsub_scalar__",
                 "__mul_scalar__", "__div_scalar__", "__rdiv_scalar__",
                 "__pow_scalar__", "__rpow_scalar__",
