@@ -21,8 +21,8 @@ def compute_quantize(attrs, inputs, _):
     data = inputs[0]
 
     bit_width = 8
-    repr_value = pow(2, repr_bit)
-    limit = (pow(2, bit_width - 1) - 1) * repr_value
+    repr_value = 1 << repr_bit
+    limit = (float(1 << (bit_width - 1)) - 1) * repr_value
     cliped_data = topi.clip(data, -limit, limit)
     scaled_data = tvm.compute(data.shape, lambda *i: \
         cliped_data(*i) / repr_value)
@@ -41,7 +41,7 @@ def compute_dequantize(attrs, inputs, _):
     """Compute definition of dequantize"""
     repr_bit = attrs.get_int('repr_bit')
     data = inputs[0]
-    scaled_data = tvm.compute(data.shape, lambda *i: (data(*i)) * float(pow(2, repr_bit)))
+    scaled_data = tvm.compute(data.shape, lambda *i: (data(*i)) * float(1 << repr_bit))
     return scaled_data
 
 reg.register_schedule("dequantize", _fschedule_naive)
