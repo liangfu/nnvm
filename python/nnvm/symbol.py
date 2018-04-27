@@ -46,6 +46,7 @@ class Symbol(SymbolBase):
         return self.handle.value
 
     def __add__(self, other):
+        """x.__add__(y) <=> x+y"""
         if isinstance(other, Symbol):
             return __add_symbol__(self, other)
         elif isinstance(other, _Number):
@@ -57,6 +58,7 @@ class Symbol(SymbolBase):
         return self.__add__(other)
 
     def __sub__(self, other):
+        """x.__sub__(y) <=> x-y"""
         if isinstance(other, Symbol):
             return __sub_symbol__(self, other)
         if isinstance(other, _Number):
@@ -71,6 +73,7 @@ class Symbol(SymbolBase):
             raise TypeError('type %s not supported' % str(type(other)))
 
     def __mul__(self, other):
+        """x.__mul__(y) <=> x*y"""
         if isinstance(other, Symbol):
             return __mul_symbol__(self, other)
         if isinstance(other, _Number):
@@ -82,6 +85,7 @@ class Symbol(SymbolBase):
         return self.__mul__(other)
 
     def __div__(self, other):
+        """x.__div__(y) <=> x/y"""
         if isinstance(other, Symbol):
             return __div_symbol__(self, other)
         if isinstance(other, _Number):
@@ -102,6 +106,7 @@ class Symbol(SymbolBase):
         return self.__rdiv__(other)
 
     def __pow__(self, other):
+        """x.__pow__(y) <=> x**y"""
         if isinstance(other, Symbol):
             return __pow_symbol__(self, other)
         if isinstance(other, _Number):
@@ -116,12 +121,14 @@ class Symbol(SymbolBase):
             raise TypeError('type %s not supported' % str(type(other)))
 
     def __neg__(self):
+        """x.__neg__() <=> -x"""
         return self.__mul__(-1.0)
 
     def __copy__(self):
         return self.__deepcopy__()
 
     def __deepcopy__(self, _=None):
+        """Returns a deep copy of the input object."""
         handle = _base.SymbolHandle()
         _base.check_call(_LIB.NNSymbolCopy(self.handle,
                                            _ctypes.byref(handle)))
